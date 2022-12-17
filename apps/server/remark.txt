@@ -1,0 +1,3 @@
+npm init
+注意package.json配置
+nodemon
