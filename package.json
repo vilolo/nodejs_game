@@ -1,0 +1,24 @@
+{
+  "name": "nodejs_game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "dependencies": {
+    "nodemon": "^2.0.20",
+    "ts-node": "^10.9.1"
+  },
+  "scripts": {
+    "serve": "nodemon --exec ts-node ./apps/server/src/index",
+    "cli": "nodemon --exec ts-node ./apps/client/src/index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vilolo/nodejs_game.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vilolo/nodejs_game/issues"
+  },
+  "homepage": "https://github.com/vilolo/nodejs_game#readme"
+}

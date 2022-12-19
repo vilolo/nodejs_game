@@ -1,5 +1,7 @@
 import { EventEmitter } from "stream";
 import WebSocket, {WebSocketServer} from 'ws'
+import { Connection } from "./Connection";
+import {ApiMsgEnum} from '../common'
 
 export interface IMyServerOptions {
     port: number;
@@ -8,6 +10,8 @@ export interface IMyServerOptions {
 export class MyServer extends EventEmitter {
     wss?: WebSocketServer;
     port: number;
+    connectionList: Set<Connection> = new Set();
+    apiMap: Map<ApiMsgEnum, Function> = new Map();
     
     constructor({ port = 8080 }: Partial<IMyServerOptions>) {
         super();
@@ -33,10 +37,17 @@ export class MyServer extends EventEmitter {
     }
 
     handleConnect(ws:WebSocket){
-        ws.on('message',(data) => {
-            console.log(data.toString());
-            console.log(data);
-        });
-        ws.send('abcc');
+        // ws.on('message',(data) => {
+        //     console.log(data.toString());
+        //     console.log(data);
+        // });
+        // ws.send('abcc');
+
+        const connection = new Connection(this, ws)
+        this.connectionList.add(connection)
+    }
+
+    setApi(apiName: ApiMsgEnum, cb: Function) {
+        this.apiMap.set(apiName, cb);
     }
 }
