@@ -1,11 +1,11 @@
 import {WebSocket} from 'ws'
 import { EventEmitter } from "stream"
 import { MyServer } from "./MyServer"
-import {Api} from '../common'
-import { getTime } from "../Utils"
+import {Api,IMsg,MsgEnum} from '../common'
+import {getTime} from '../utils'
 
 export enum ConnectionEventEnum {
-    Close = "Close",
+    Close = "Close"
 }
 
 interface IItem {
@@ -16,9 +16,12 @@ interface IItem {
 export class Connection extends EventEmitter {
     server: MyServer
     ws: WebSocket
+    msgMap: Map<MsgEnum, Array<IItem>> = new Map()
+
+    playerId?: string
 
     constructor(server: MyServer, ws: WebSocket){
-        super();
+        super()
         this.server = server
         this.ws = ws
         this.ws.on("close", (code: number, reason: Buffer) => {
@@ -29,6 +32,7 @@ export class Connection extends EventEmitter {
             try {
                 const str = buffer.toString()
                 console.log(`${getTime()}接收|字节数${buffer.length}|${str}`)
+
 
                 const json = JSON.parse(str)
                 const { name, data } = json
@@ -43,11 +47,22 @@ export class Connection extends EventEmitter {
                             this.sendSuccess(name, res)
                         }
                     } catch (error) {
-                        
+                        console.log('apiMap error')
+                        console.log(error)
                     }
                     
                 }else{
-                    console.log("no api name")
+                    try {
+                        if (this.msgMap.has(name)) {
+                            const msgList = this.msgMap.get(name)
+                            if(msgList){
+                                msgList.forEach(({ cb, ctx }) => cb.call(ctx, this, data))
+                            }
+                        }
+                    } catch (error) {
+                        console.log('msgMap error')
+                        console.log(error)
+                    }
                 }
 
             } catch (error) {
@@ -56,12 +71,23 @@ export class Connection extends EventEmitter {
         })
     }
 
-    //返回 api、event 统一
+    //=== type 1=接口，2=事件 ===
+
+    //api统一返回
     sendSuccess<T extends keyof Api>(name: T, data: Api[T]['res']){
-        this.ws.send(JSON.stringify({"name":name,"data":data}))
+        this.ws.send(JSON.stringify({"type":1,"name":name,"data":data}))
     }
 
     sendError<T extends keyof Api>(name: T, msg:String='服务错误', data?: Api[T]['res']){
-        this.ws.send(JSON.stringify({"name":name,"msg":msg,"data":data}))
+        this.ws.send(JSON.stringify({"type":1,"name":name,"msg":msg,"data":data}))
+    }
+
+    sendMsg<T extends MsgEnum >(name:T, data:IMsg[T]){
+        const msg = JSON.stringify({
+            "type":2,
+            name,
+            data,
+        })
+        this.ws.send(msg)
     }
 }

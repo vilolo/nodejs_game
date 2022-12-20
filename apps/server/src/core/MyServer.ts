@@ -1,16 +1,21 @@
 import { EventEmitter } from "stream";
 import WebSocket, {WebSocketServer} from 'ws'
-import { Connection } from "./Connection";
+import { Connection,ConnectionEventEnum } from "./Connection";
 import {Api, ApiEnum} from '../common'
 
 export interface IMyServerOptions {
     port: number;
 }
 
+export enum MyServerEventEnum {
+    Connect = "Connect",
+    DisConnect = "DisConnect",
+  }
+
 export class MyServer extends EventEmitter {
     wss?: WebSocketServer;
     port: number;
-    connectionList: Set<Connection> = new Set();
+    connections: Set<Connection> = new Set();
     apiMap: Map<keyof Api, Function> = new Map();
     
     constructor({ port = 8080 }: Partial<IMyServerOptions>) {
@@ -44,7 +49,16 @@ export class MyServer extends EventEmitter {
         // ws.send('abcc');
 
         const connection = new Connection(this, ws)
-        this.connectionList.add(connection)
+
+        //向外告知有人来了
+        this.connections.add(connection)
+        this.emit(MyServerEventEnum.Connect, connection);
+
+        //向外告知有人走了
+        connection.on(ConnectionEventEnum.Close, (code: number, reason: string) => {
+            this.connections.delete(connection);
+            this.emit(MyServerEventEnum.DisConnect, connection, code, reason);
+        });
     }
 
     setApi(api:ApiEnum, cb: Function) {
