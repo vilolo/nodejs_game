@@ -1,6 +1,7 @@
 import Player from './Player'
 import PlayerManager from './PlayerManager'
 import {MsgEnum} from '../common'
+import { IState } from '../common/State';
 
 export default class Room{
     id: number;
@@ -35,6 +36,7 @@ export default class Room{
     }
 
     start() {
+        const state: IState= {actors:[]}
         //循环用户，开启游戏，监听事件
         this.idMapPlayers.forEach((player,key)=>{
             player.connection.sendMsg(MsgEnum.MsgGameStart, {

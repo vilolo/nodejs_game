@@ -8,7 +8,7 @@ export enum MsgEnum {
 
 export interface IMsg{
     [MsgEnum.MsgPlayerList]:IMsgPlayerList,
-    [MsgEnum.MsgGameStart]:IMsgPlayerList
+    [MsgEnum.MsgGameStart]:IMsgGameStart
 }
 
 export interface IMsgPlayerList {
