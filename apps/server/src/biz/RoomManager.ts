@@ -10,8 +10,8 @@ export default class RoomManager extends Singleton {
     nextRoomId = 1;
     idMapRoom: Map<number, Room> = new Map();
 
-    createRoom() {
-        const room = new Room(this.nextRoomId++);
+    createRoom(uid:string) {
+        const room = new Room(this.nextRoomId++,uid);
         this.idMapRoom.set(room.id, room);
         return room;
     }
@@ -22,6 +22,7 @@ export default class RoomManager extends Singleton {
             room.join(uid);
             return room;
         }
+        throw '房间ID不存在'
     }
 
     getRoomById(id: number) {
@@ -31,8 +32,8 @@ export default class RoomManager extends Singleton {
     startRoom(rid: number) {
         const room = this.getRoomById(rid);
         if (room) {
-          room.start();
+            room.start();
         }
-      }
+    }
 
 }

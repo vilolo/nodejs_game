@@ -1,11 +1,5 @@
 import {Connection} from '../core'
 
-export interface IPlayer {
-    uid: string  //是否openid
-    username: string
-    rid?: number
-}
-
 export default class Player{
     uid: string  //是否openid
     username: string
@@ -16,6 +10,7 @@ export default class Player{
         this.uid = uid;
         this.username = username;
         this.connection = connection;
+        this.connection.uid = uid;
         this.rid = -1;
     }
 }

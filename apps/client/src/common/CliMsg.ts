@@ -25,6 +25,7 @@ export interface IMsgGameStart {
 
 export interface IMsgClientSync {
     frameId: number;
+    uid: string;
     input: IClientInput;
 }
 

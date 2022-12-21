@@ -1,7 +1,7 @@
 import {WebSocket} from 'ws'
 import { EventEmitter } from "stream"
 import { MyServer } from "./MyServer"
-import {Api,IMsg,MsgEnum} from '../common'
+import {IApi,IMsg,MsgEnum} from '../common'
 import {getTime} from '../utils'
 
 export enum ConnectionEventEnum {
@@ -18,7 +18,7 @@ export class Connection extends EventEmitter {
     ws: WebSocket
     msgMap: Map<MsgEnum, Array<IItem>> = new Map()
 
-    playerId?: string
+    uid?: string    //用户id，可能openid
 
     constructor(server: MyServer, ws: WebSocket){
         super()
@@ -38,7 +38,7 @@ export class Connection extends EventEmitter {
                 const { name, data } = json
 
                 //todo 处理 api(加入房间等) 和 event(游戏事件同步)
-                if (this.server.apiMap.has(name)) {
+                if (json.type == 1 && this.server.apiMap.has(name)) {
                     try {
                         const cb = this.server.apiMap.get(name)
                         if(cb){
@@ -49,6 +49,9 @@ export class Connection extends EventEmitter {
                     } catch (error) {
                         console.log('apiMap error')
                         console.log(error)
+                        if(error){
+                            this.sendError(name, error.toString())
+                        }
                     }
                     
                 }else{
@@ -74,11 +77,11 @@ export class Connection extends EventEmitter {
     //=== type 1=接口，2=事件 ===
 
     //api统一返回
-    sendSuccess<T extends keyof Api>(name: T, data: Api[T]['res']){
+    sendSuccess<T extends keyof IApi>(name: T, data: IApi[T]['res']){
         this.ws.send(JSON.stringify({"type":1,"name":name,"data":data}))
     }
 
-    sendError<T extends keyof Api>(name: T, msg:String='服务错误', data?: Api[T]['res']){
+    sendError<T extends keyof IApi>(name: T, msg:String='服务错误', data?: IApi[T]['res']){
         this.ws.send(JSON.stringify({"type":1,"name":name,"msg":msg,"data":data}))
     }
 
@@ -89,5 +92,13 @@ export class Connection extends EventEmitter {
             data,
         })
         this.ws.send(msg)
+    }
+
+    listenMsg<T extends keyof IMsg>(name: T, cb: (connection: Connection, arg: IMsg[T]) => void, ctx: unknown) {
+        if (this.msgMap.has(name)) {
+            this.msgMap.get(name)?.push({ cb, ctx })
+        } else {
+            this.msgMap.set(name, [{ cb, ctx }])
+        }
     }
 }

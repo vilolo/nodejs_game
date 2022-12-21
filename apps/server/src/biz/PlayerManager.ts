@@ -1,7 +1,7 @@
 import Singleton from '../base/Singleton'
 import {Connection} from '../core'
-import {MsgEnum} from '../common'
-import Player, {IPlayer} from './Player'
+import {MsgEnum,IPlayer} from '../common'
+import Player from './Player'
 
 export default class PlayerManager extends Singleton {
     static get Instance(){

@@ -1,7 +1,7 @@
 import { EventEmitter } from "stream";
 import WebSocket, {WebSocketServer} from 'ws'
 import { Connection,ConnectionEventEnum } from "./Connection";
-import {Api, ApiEnum} from '../common'
+import {IApi, ApiEnum} from '../common'
 
 export interface IMyServerOptions {
     port: number;
@@ -16,7 +16,7 @@ export class MyServer extends EventEmitter {
     wss?: WebSocketServer;
     port: number;
     connections: Set<Connection> = new Set();
-    apiMap: Map<keyof Api, Function> = new Map();
+    apiMap: Map<keyof IApi, Function> = new Map();
     
     constructor({ port = 8080 }: Partial<IMyServerOptions>) {
         super();
