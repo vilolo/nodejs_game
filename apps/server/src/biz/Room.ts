@@ -9,6 +9,7 @@ export default class Room{
     uid:string
     private idMapPlayers: Map<string, Player> = new Map();
 
+    // private pendingInputMap = new Map<String, IClientInput>();
     private pendingInput: Array<IClientInput> = [];
     private lastPlayerFrameIdMap: Map<string, number> = new Map();
 
@@ -67,26 +68,28 @@ export default class Room{
 
         let t1 = setInterval(() => {
             this.sendServerMsg();
-        }, 2000);
+        }, 5000);
         this.timers = [t1];
     }
 
     getClientMsg(connection: Connection, { frameId, input }: IMsgClientSync) {
         if(connection.uid){
             this.lastPlayerFrameIdMap.set(connection.uid, frameId);
+            // this.pendingInputMap.set(connection.uid, input)
             this.pendingInput.push(input);
         }
     }
 
     sendServerMsg(){
+        //todo 不能只发最新的
+        // const pendingInput = Array.from(this.pendingInputMap.values())
+        // this.pendingInputMap.clear()
+
         const pendingInput = this.pendingInput;
         this.pendingInput = [];
 
-        //todo 只发最新的
-
         if(pendingInput.length > 0){
             console.log('== pendingInput ==')
-            //循环pendingInput 保留最新帧
             this.idMapPlayers.forEach((player,key)=>{
                 player.connection.sendMsg(MsgEnum.MsgServerSync, {
                     lastFrameId: this.lastPlayerFrameIdMap.get(player.uid) ?? 0,

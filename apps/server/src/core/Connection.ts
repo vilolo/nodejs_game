@@ -101,4 +101,14 @@ export class Connection extends EventEmitter {
             this.msgMap.set(name, [{ cb, ctx }])
         }
     }
+
+    unlistenMsg<T extends keyof IMsg>(name: T, cb: (connection: Connection, arg: IMsg[T]) => void, ctx: unknown){
+        if (this.msgMap.has(name)) {
+            const items = this.msgMap.get(name)
+            if(items){
+                const index = items.findIndex((i) => cb === i.cb && i.ctx === ctx)
+                index > -1 && items.splice(index, 1)
+            }
+        }
+    }
 }
